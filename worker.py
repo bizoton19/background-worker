@@ -13,9 +13,9 @@ bus_service.create_subscription(topic_name, subscription)
 
 # get subscription message
 msg = bus_service.receive_subscription_message(
-    topic_name, subscription, peek_lock=True)
-print(msg.body)
+    topic_name, subscription, peek_lock=False)
+msg_body = msg.body.decode("utf-8")
+print(msg_body)
 # write to DB
 #mClient = MongoClient(mongo_conn_str)
 # get db
-msg.complete()
