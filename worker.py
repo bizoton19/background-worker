@@ -1,7 +1,7 @@
 import os
 from azure.servicebus.control_client import ServiceBusService, Message, Topic
 #from pymongo import MOngoClient
-connection_str = os.environ['SB_CONN_STR']
+#connection_str = os.environ['SB_CONN_STR']
 #mongo_conn_str = os.environ['PROD_MONGODB']
 bus_service = ServiceBusService(
     service_namespace="Endpoint=sb://cpsc-topic.servicebus.windows.net", shared_access_key_name="RootManageSharedAccessKey", shared_access_key_value="FG76GE6eVG0HfdRFp9d7+opJMp4qhluotQIxAVpGmEw=")
