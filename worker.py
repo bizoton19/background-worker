@@ -22,12 +22,11 @@ msg = bus_service.receive_subscription_message(
     topic_name, subscription, peek_lock=False)
 msg_body = None
 entity = None
-if len(msg.body) > 0:
-    msg_body = msg.body.decode("utf-8")
-    entity = json.loads(msg_body)
-    print(msg_body)
-else:
-    print("The body of the message retreived from the service bus topic is emtpy")
+
+msg_body = msg.body.decode("utf-8")
+entity = json.loads(msg_body)
+print(msg_body)
+
 
 # write to DB
 mClient = MongoClient(mongo_conn_str)
