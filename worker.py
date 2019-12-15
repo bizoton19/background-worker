@@ -1,8 +1,9 @@
 import os
 from azure.servicebus.control_client import ServiceBusService, Message, Topic
-# from pymongo import MongoClient
-# mongo_conn_str = os.environ['PROD_MONGODB']
+from pymongo import MongoClient
+import json
 
+mongo_conn_str = os.getenv('PROD_MONGODB')
 shared_access_key = os.getenv('shared_access_key')
 shared_access_value = os.getenv('shared_access_value')
 service_namespace = os.getenv('service_namespace')
@@ -19,8 +20,20 @@ bus_service.create_subscription(topic_name, subscription)
 # get subscription message
 msg = bus_service.receive_subscription_message(
     topic_name, subscription, peek_lock=False)
-msg_body = msg.body.decode("utf-8")
-print(msg_body)
+msg_body = None
+entity = None
+if len(msg.body) > 0:
+    msg_body = msg.body.decode("utf-8")
+    entity = json.loads(msg_body)
+    print(msg_body)
+else:
+    print("The body of the message retreived from the service bus topic is emtpy")
+
 # write to DB
-# mClient = MongoClient(mongo_conn_str)
+mClient = MongoClient(mongo_conn_str)
 # get db
+db = mClient.neiss_test
+
+result = db.report.insert_one(entity)
+
+print('Created {0}'.format(result.inserted_id))
