@@ -27,12 +27,14 @@ msg_body = msg.body.decode("utf-8")
 entity = json.loads(msg_body)
 print(msg_body)
 
-
-# write to DB
-mClient = MongoClient(mongo_conn_str)
-# get db
-db = mClient.neiss_test
-
-result = db.report.insert_one(entity)
-
-print('Created {0}'.format(result.inserted_id))
+try:
+    # write to DB
+    mClient = MongoClient(mongo_conn_str)
+    # get db
+    db = mClient.neiss_test
+    result = db.report.insert_one(entity)
+    print('Created {0}'.format(result.inserted_id))
+except Exception:
+    msg.unlock()  # call this method if any of the database operation above fail
+finally:
+    print('Process completed')
