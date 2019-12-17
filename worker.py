@@ -22,10 +22,13 @@ msg = bus_service.receive_subscription_message(
     topic_name, subscription, peek_lock=False)
 msg_body = None
 entity = None
-
-msg_body = msg.body.decode("utf-8")
-entity = json.loads(msg_body)
-print(msg_body)
+if msg is None:
+    print('No messages to retrieve')
+    exit()
+else:
+    msg_body = msg.body.decode("utf-8")
+    entity = json.loads(msg_body)
+    print(msg_body)
 
 try:
     # write to DB
