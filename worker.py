@@ -22,7 +22,7 @@ msg = bus_service.receive_subscription_message(
     topic_name, subscription, peek_lock=False)
 msg_body = None
 entity = None
-if msg is None:
+if msg.body is None:
     print('No messages to retrieve')
     exit()
 else:
