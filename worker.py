@@ -1,43 +1,84 @@
 import os
-from azure.servicebus.control_client import ServiceBusService, Message, Topic
+import requests
 from pymongo import MongoClient
 import json
+import pprint
+import datetime
+
+
+def update_job_history():
+    result = db.job_history.find_one({'job_name':'recalls_to_mongodb'})
+    result['run_date'] = datetime.datetime.today()
+    result['collection_size'] = db.recalls.count_documents({})
+    result['db_size']=db.command('dbstats')['dataSize']
+    db.job_history.replace_one({'_id': result['_id']},result)
+    mClient.close()
+
+def get_recalls_api_data(url,start_date):
+    payload= {'RecallDateStart':start_date,'format':'json'}
+    r = requests.get(url,params=payload)
+    print(r)
+      
+    if  r.status_code > 200:
+        print('Error Retreiving recall')
+        print(r.status_code)
+        #sendEmail
+        exit()
+    else:
+       
+        print('done reading from api')
+        return r.json()
+        
+
+def load_recalls_data(msg_body):
+    mClient = MongoClient(mongo_conn_str)
+    try:
+        # write to DB
+       
+        # get db
+        db = mClient.neiss_test
+        print('about to bulk insert into mongo')
+        result = db.recalls.insert(msg_body)
+        print('done inserting into mongo')
+        print('updating job history')
+        update_job_history()
+       
+    except Exception as err:
+        print(err)  # call this method if any of the database operation above fail
+    finally:
+        print('Process completed')
+        mClient.close()
+
+def get_recall_run_date() :
+    try:
+        # write to DB
+        mClient = MongoClient(mongo_conn_str)
+        # get db
+        db = mClient.neiss_test
+        result = db.job_history.find_one({'job_name':'recalls_to_mongodb'})
+        pprint.pprint(result)
+        print(result['run_date'])
+           
+    except Exception as err:
+        #msg.unlock()  # call this method if any of the database operation above fail
+        print(err)
+    finally:
+        mClient.close()
+        return result['run_date'] 
 
 mongo_conn_str = os.getenv('PROD_MONGODB')
-shared_access_key = os.getenv('shared_access_key')
-shared_access_value = os.getenv('shared_access_value')
-service_namespace = os.getenv('service_namespace')
-print(service_namespace)
+mClient = MongoClient(mongo_conn_str)
+db = mClient.neiss_test
 
-bus_service = ServiceBusService(service_namespace=service_namespace, shared_access_key_name=shared_access_key,
-                                shared_access_key_value=shared_access_value)
-topic_name = "on-prem-test"  # the topic name already defined in azure
-subscription = "heroku_consumer"  # unique name for this application/consumer
-bus_service.create_topic(topic_name)
-# create subscription
-bus_service.create_subscription(topic_name, subscription)
+SERVICE_ROOT = "https://www.saferproducts.gov/RestWebServices/Recall" 
 
-# get subscription message
-msg = bus_service.receive_subscription_message(
-    topic_name, subscription, peek_lock=False)
-msg_body = None
-entity = None
-if msg.body is None:
-    print('No messages to retrieve')
-    exit()
-else:
-    msg_body = msg.body.decode("utf-8")
-    entity = json.loads(msg_body)
-    print(msg_body)
+last_run_date =get_recall_run_date()
+today = last_run_date.strftime("%Y-%m-%d")
+if datetime.datetime.today() > last_run_date:
+   data = get_recalls_api_data(SERVICE_ROOT,today)
+   load_recalls_data(data)
 
-try:
-    # write to DB
-    mClient = MongoClient(mongo_conn_str)
-    # get db
-    db = mClient.neiss_test
-    result = db.report.insert_one(entity)
-    print('Created {0}'.format(result.inserted_id))
-except Exception:
-    msg.unlock()  # call this method if any of the database operation above fail
-finally:
-    print('Process completed')
+
+
+    
+
