@@ -33,9 +33,7 @@ def get_recalls_api_data(url,start_date):
 def load_recalls_data(msg_body):
     mClient = MongoClient(mongo_conn_str)
     try:
-        # write to DB
-       
-        # get db
+        
         db = mClient.neiss_test
         print('about to bulk insert into mongo')
         result = db.recalls.insert(msg_body)
@@ -44,7 +42,7 @@ def load_recalls_data(msg_body):
         update_job_history()
        
     except Exception as err:
-        print(err)  # call this method if any of the database operation above fail
+        print(err) 
     finally:
         print('Process completed')
         mClient.close()
