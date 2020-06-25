@@ -1,13 +1,16 @@
 import os
+from elasticsearch import Elasticsearch
 import requests
 from pymongo import MongoClient
 import json
 import pprint
 import datetime
+import fulltext 
+from fulltext import mappings, mappings_index
 
 
-def update_job_history():
-    result = db.job_history.find_one({'job_name':'recalls_to_mongodb'})
+def update_job_history(job_name):
+    result = db.job_history.find_one({'job_name':job_name})
     result['run_date'] = datetime.datetime.today()
     result['collection_size'] = db.recalls.count_documents({})
     result['db_size']=db.command('dbstats')['dataSize']
@@ -17,7 +20,7 @@ def update_job_history():
 def get_recalls_api_data(url,start_date):
     payload= {'RecallDateStart':start_date,'format':'json'}
     r = requests.get(url,params=payload)
-    print(r)
+    
       
     if  r.status_code > 200:
         print('Error Retreiving recall')
@@ -27,7 +30,7 @@ def get_recalls_api_data(url,start_date):
     else:
        
         print('done reading from api')
-        return r.json()
+        return r
         
 
 def load_recalls_data(msg_body):
@@ -39,7 +42,7 @@ def load_recalls_data(msg_body):
         result = db.recalls.insert(msg_body)
         print('done inserting into mongo')
         print('updating job history')
-        update_job_history()
+        update_job_history(job_name="recalls_to_mongo")
        
     except Exception as err:
         print(err) 
@@ -48,23 +51,100 @@ def load_recalls_data(msg_body):
         mClient.close()
 
 def get_recall_run_date() :
+    # write to DB
+    mClient = MongoClient(mongo_conn_str)
     try:
-        # write to DB
-        mClient = MongoClient(mongo_conn_str)
-        # get db
         db = mClient.neiss_test
         result = db.job_history.find_one({'job_name':'recalls_to_mongodb'})
         pprint.pprint(result)
         print(result['run_date'])
+        
+        return result['run_date'] 
            
     except Exception as err:
         #msg.unlock()  # call this method if any of the database operation above fail
         print(err)
+        
     finally:
         mClient.close()
-        return result['run_date'] 
+        print("connection closed to mongo")
+        
+       
 
+def index_recalls(data, index_name, delete_index=False):
+    es = Elasticsearch(hosts=[ELASTIC_HOST])
+    index_name = mappings_index
+    recalls = json.loads(data)
+    if not es.indices.exists(index_name):
+        es.indices.create(
+            index_name,
+            body = mappings()
+        )
+
+    if delete_index:
+        es.indices.delete(index=index_name, ignore=[400, 404])
+    print('found '+ str(len(recalls)) + ' recalls')
+    for recall in recalls :
+        fulltext =setfulltext(recall)
+        recallNumber = recall['RecallNumber']
+        print('indexing recall number ' + recallNumber)
+        es.index(
+           index=index_name,
+           id=recallNumber,
+           doc_type="recall",
+           body= fulltext
+           )
+    #update_job_history(job_name="recalls_to_elasticsearch")
+    
+def setfulltext(recall):
+    #loop over recall keys - if key is list of dict- perform list comp to concat all string values
+    seperator = ' '
+    l = []
+    l.append(seperator.join([seperator.join(r.values()) for r in recall['Products']]))
+    l.append(seperator.join([seperator.join(r.values()) for r in recall['Injuries']]))
+    l.append(seperator.join([seperator.join(r.values()) for r in recall['Manufacturers']]))
+    l.append(seperator.join([seperator.join(r.values()) for r in recall['Importers']]))
+    l.append(seperator.join([seperator.join(r.values()) for r in recall['Distributors']]))
+    l.append(seperator.join([seperator.join(r.values()) for r in recall['Retailers']]))
+    l.append(seperator.join([seperator.join(r.values()) for r in recall['Hazards']]))
+    l.append(seperator.join([seperator.join(r.values()) for r in recall['Remedies']]))
+    l.append(seperator.join([seperator.join(r.values()) for r in recall['ProductUPCs']]))
+    l.append( seperator.join([seperator.join(r.values()) for r in recall['RemedyOptions']]))
+    l.append(seperator.join([seperator.join(r.values()) for r in recall['Images']]))
+    l.append( seperator.join([seperator.join(r.values()) for r in recall['Inconjunctions']]))
+    l.append(seperator.join([recall['RecallNumber'],recall['Title'],recall['Description'],recall['ConsumerContact']]))
+    
+    fulltext = seperator.join(l)
+    
+    return {
+        'title':{
+            'input': tokenize(recall['Title'])
+        },
+        'recallNumber':recall['RecallNumber'],
+        'fulltext':fulltext
+        }
+             
+def tokenize(input) :
+    tokenized = []
+    tokenized.append(input)
+    tokens = input.split(' ')
+    for t in tokens:
+        tokenized.append(t)
+    return tokenized
+
+
+ELASTIC_HOST = os.getenv("ELASTIC_HOST")
+if ELASTIC_HOST is None:
+    exit()
+ELASTIC_PORT = os.getenv("ELASTIC_PORT")
+INDEX_PATTERN = "recalls"
+#ELASTIC_SEARCH_URL = 'http://' + ELASTIC_HOST + ':' + str(ELASTIC_PORT)
+INDEX_PREFIX = "cpsc-"
 mongo_conn_str = os.getenv('PROD_MONGODB')
+print(mongo_conn_str)
+if mongo_conn_str is None:
+    print('exiting, mongo conn string is none')
+    exit()
 mClient = MongoClient(mongo_conn_str)
 db = mClient.neiss_test
 
@@ -74,7 +154,11 @@ last_run_date =get_recall_run_date()
 today = last_run_date.strftime("%Y-%m-%d")
 if datetime.datetime.today() > last_run_date:
    data = get_recalls_api_data(SERVICE_ROOT,today)
-   load_recalls_data(data)
+   #load_recalls_data(data.json)
+   #data,es, index_name, delete_index=False
+   index_recalls(data.text,INDEX_PREFIX + INDEX_PATTERN,False)
+  
+  
 
 
 
