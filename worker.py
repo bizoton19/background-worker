@@ -1,4 +1,5 @@
 import os
+import time
 from elasticsearch import Elasticsearch
 import requests
 from pymongo import MongoClient
@@ -100,6 +101,12 @@ def setfulltext(recall):
     #loop over recall keys - if key is list of dict- perform list comp to concat all string values
     seperator = ' '
     l = []
+    #for key in recall.keys():
+     #   print(type(recall[key]))
+     #   if type(recall[key]) is type([]):
+     #       print("Yes " + recall[key] + " a list")
+    #time.sleep(10)
+    #exit()
     l.append(seperator.join([seperator.join(r.values()) for r in recall['Products']]))
     l.append(seperator.join([seperator.join(r.values()) for r in recall['Injuries']]))
     l.append(seperator.join([seperator.join(r.values()) for r in recall['Manufacturers']]))
@@ -117,25 +124,40 @@ def setfulltext(recall):
     fulltext = seperator.join(l)
     
     return {
-        'title':{
+        'title_suggest':{
             'input': tokenize(recall['Title'])
+           
         },
+        'title':recall['Title'],
         'recallNumber':recall['RecallNumber'],
-        'fulltext':fulltext
+        'fulltext':fulltext,
+        'consumerContact': recall['ConsumerContact'],
+        'products':recall['Products'],
+        'injuries': recall['Injuries'],
+        'manufacturers':recall['Manufacturers'],
+        'importers': recall['Importers'],
+        'distributors': recall['Distributors'],
+        'retailers': recall['Retailers'],
+        'hazards': recall['Hazards'],
+        'remedies': recall['Remedies'],
+        'remedyOptions': recall['RemedyOptions'],
+        'images': recall['Images'],
+        'inconjunctions' : recall['Inconjunctions'],
+        'productUPCs': recall['ProductUPCs'],
+        'recallDate': recall['RecallDate']
         }
              
 def tokenize(input) :
     tokenized = []
     tokenized.append(input)
     tokens = input.split(' ')
-    for t in tokens:
-        tokenized.append(t)
+    tokenized.extend(tokens)
     return tokenized
 
 
 ELASTIC_HOST = os.getenv("ELASTIC_HOST")
 if ELASTIC_HOST is None:
-    exit()
+    print(' ELASTIC_HOST conn string is none')
 ELASTIC_PORT = os.getenv("ELASTIC_PORT")
 INDEX_PATTERN = "recalls"
 #ELASTIC_SEARCH_URL = 'http://' + ELASTIC_HOST + ':' + str(ELASTIC_PORT)
@@ -143,7 +165,7 @@ INDEX_PREFIX = "cpsc-"
 mongo_conn_str = os.getenv('PROD_MONGODB')
 print(mongo_conn_str)
 if mongo_conn_str is None:
-    print('exiting, mongo conn string is none')
+    print('PROD_MONGODB conn string is none')
     exit()
 mClient = MongoClient(mongo_conn_str)
 db = mClient.neiss_test
@@ -152,6 +174,7 @@ SERVICE_ROOT = "https://www.saferproducts.gov/RestWebServices/Recall"
 
 last_run_date =get_recall_run_date()
 today = last_run_date.strftime("%Y-%m-%d")
+print(today)
 if datetime.datetime.today() > last_run_date:
    data = get_recalls_api_data(SERVICE_ROOT,today)
    #load_recalls_data(data.json)
