@@ -26,110 +26,29 @@ def mappings():
                         "type": "text"
                     },
                     "products":{
-                        "type":"nested",
-                        "properties":{
-                           "type": {
-                               "type": "text",
-                               "fields": {
-                                   "Type":{
-                                   "type":"keyword"
-                                }
-                              }
-                           },
-                           "name":{
-                               "type": "text",
-                               "fields": {
-                                   "Name":{
-                                   "type":"keyword"
-                                }
-                              }
-                           }
-                        }
+                        "type":"nested"
 
                     },
                     "manufacturers":{
-                        "type":"nested",
-                        "properties":{
-                           "name": {
-                               "type": "text",
-                               "fields": {
-                                   "Name":{
-                                   "type":"keyword"
-                                }
-                              }
-                           }
-                        }
+                        "type":"nested"
 
                     },
                     "distributors":{
-                        "type":"nested",
-                        "properties":{
-                           "name": {
-                               "type": "text",
-                               "fields": {
-                                   "Name":{
-                                   "type":"keyword"
-                                }
-                              }
-                           }
-                        }
+                        "type":"nested"
 
                     },
                     "retailers":{
-                        "type":"nested",
-                        "properties":{
-                           "name": {
-                               "type": "text",
-                               "fields": {
-                                   "Name":{
-                                   "type":"keyword"
-                                }
-                              }
-                           }
-                        }
+                        "type":"nested"
 
                     },
                     "importers":{
-                        "type":"nested",
-                        "properties":{
-                           "name": {
-                               "type": "text",
-                               "fields": {
-                                   "Name":{
-                                   "type":"keyword"
-                                }
-                              }
-                           }
-                        }
-
+                        "type":"nested"
                     },
                     "manufacturerCountries":{
-                        "type":"nested",
-                        "properties":{
-                           "country": {
-                               "type": "text",
-                               "fields": {
-                                   "Country":{
-                                   "type":"keyword"
-                                }
-                              }
-                           }
-                        }
-
+                        "type":"nested"
                     },
                     "remedyOptions":{
-                        "type":"nested",
-                        "properties":{
-                           "option": {
-                               "type": "text",
-                               "fields": {
-                                   "Option":{
-                                   "type":"keyword"
-                                }
-                              }
-                           }
-                        }
-
+                        "type":"nested"
                     }
                 }
             }

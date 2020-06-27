@@ -135,6 +135,7 @@ def setfulltext(recall):
         'products':recall['Products'],
         'injuries': recall['Injuries'],
         'manufacturers':recall['Manufacturers'],
+        'manufacturerCountries':recall['manufacturerCountries'],
         'importers': recall['Importers'],
         'distributors': recall['Distributors'],
         'retailers': recall['Retailers'],
