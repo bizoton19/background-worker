@@ -1,9 +1,9 @@
 title_suggest ={
     "suggest": {
-        "song-suggest" : {
+        "title-suggest" : {
             "prefix" : "hazrd", 
             "completion" : { 
-                "field" : "title_suggest",
+                "field" : "TitleSuggest",
                 "fuzzy" : {
                     "fuzziness" : 2,
                     "min_length" : 3

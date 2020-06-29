@@ -13,41 +13,41 @@ def mappings():
                     "fulltext": {
                         "type": "text"
                     },
-                    "title_suggest": {
+                    "TitleSuggest": {
                         "type": "completion"
                        
                     },
-                    "recallNumber": {
+                    "RecallNumber": {
                         "type": "text"
                         
                     
                     },
-                    "consumerContact":{
+                    "ConsumerContact":{
                         "type": "text"
                     },
-                    "products":{
+                    "Products":{
                         "type":"nested"
 
                     },
-                    "manufacturers":{
+                    "Manufacturers":{
                         "type":"nested"
 
                     },
-                    "distributors":{
+                    "Distributors":{
                         "type":"nested"
 
                     },
-                    "retailers":{
+                    "Retailers":{
                         "type":"nested"
 
                     },
-                    "importers":{
+                    "Importers":{
                         "type":"nested"
                     },
-                    "manufacturerCountries":{
+                    "ManufacturerCountries":{
                         "type":"nested"
                     },
-                    "remedyOptions":{
+                    "RemedyOptions":{
                         "type":"nested"
                     }
                 }

@@ -1,14 +1,27 @@
-nested_term_query={
-    "query": {
-        "nested" : {
-            "path" : "products",
-            "query" : {
-              "match" : {"products.Type": "Furniture and Furnishings and Decorations"}       
-            }
-       }    
-     }
-}
-
+def exact_product_type(term):
+    return {
+        "size":"20",
+        "query": {
+            "nested" : {
+                "path" : "products",
+                "query" : {
+                "term" : {"products.Type.keyword": term}       
+                }
+        }    
+        }
+    }
+def exact_manufacturer(term):
+    return {
+        "size":"20",
+        "query": {
+            "nested" : {
+                "path" : "manufacturers",
+                "query" : {
+                "term" : {"manufacturers.Name.keyword": term}       
+                }
+        }    
+        }
+    }
 fulltext_queryString = {
     "query": {
         "query_string" : {

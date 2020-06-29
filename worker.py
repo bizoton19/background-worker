@@ -118,34 +118,35 @@ def setfulltext(recall):
     l.append(seperator.join([seperator.join(r.values()) for r in recall['ProductUPCs']]))
     l.append( seperator.join([seperator.join(r.values()) for r in recall['RemedyOptions']]))
     l.append(seperator.join([seperator.join(r.values()) for r in recall['Images']]))
-    l.append( seperator.join([seperator.join(r.values()) for r in recall['Inconjunctions']]))
+    l.append(seperator.join([seperator.join(r.values()) for r in recall['Inconjunctions']]))
+    
     l.append(seperator.join([recall['RecallNumber'],recall['Title'],recall['Description'],recall['ConsumerContact']]))
     
     fulltext = seperator.join(l)
     
     return {
-        'title_suggest':{
+        'TitleSuggest':{
             'input': tokenize(recall['Title'])
            
         },
-        'title':recall['Title'],
-        'recallNumber':recall['RecallNumber'],
-        'fulltext':fulltext,
-        'consumerContact': recall['ConsumerContact'],
-        'products':recall['Products'],
-        'injuries': recall['Injuries'],
-        'manufacturers':recall['Manufacturers'],
-        'manufacturerCountries':recall['manufacturerCountries'],
-        'importers': recall['Importers'],
-        'distributors': recall['Distributors'],
-        'retailers': recall['Retailers'],
-        'hazards': recall['Hazards'],
-        'remedies': recall['Remedies'],
-        'remedyOptions': recall['RemedyOptions'],
-        'images': recall['Images'],
-        'inconjunctions' : recall['Inconjunctions'],
-        'productUPCs': recall['ProductUPCs'],
-        'recallDate': recall['RecallDate']
+        'Title':recall['Title'],
+        'RecallNumber':recall['RecallNumber'],
+        'Fulltext':fulltext,
+        'ConsumerContact': recall['ConsumerContact'],
+        'Products':recall['Products'],
+        'Injuries': recall['Injuries'],
+        'Manufacturers':recall['Manufacturers'],
+        'ManufacturerCountries':recall['ManufacturerCountries'],
+        'Importers': recall['Importers'],
+        'Distributors': recall['Distributors'],
+        'Retailers': recall['Retailers'],
+        'Hazards': recall['Hazards'],
+        'Remedies': recall['Remedies'],
+        'RemedyOptions': recall['RemedyOptions'],
+        'Images': recall['Images'],
+        'Inconjunctions' : recall['Inconjunctions'],
+        'ProductUPCs': recall['ProductUPCs'],
+        'RecallDate': recall['RecallDate']
         }
              
 def tokenize(input) :
